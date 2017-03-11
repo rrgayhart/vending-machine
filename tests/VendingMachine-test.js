@@ -60,28 +60,61 @@ describe('VendingMachine', function(){
 
   describe('.selectButton', function(){
     context('when selected button is \'clear\'', function(){
+      var action = function(){ subject.selectButton('clear') };
+
       it('clears button selection', function(){
         subject.selectButton('f');
         expect(subject.buttonQueue).to.equal('f');
-        subject.selectButton('clear');
+        action();
         expect(subject.buttonQueue).to.equal('');
       });
 
       it('clears pending items', function(){
         subject.pendingPurchase = samplePendingPurchase;
-        subject.selectButton('clear');
+        action();
         expect(subject.pendingPurchase).to.equal(null);
       });
 
-      it('does not return credits');
-      it('does not reset accumulated credits');
+      it('does not return credits', function(){
+        var spy = sinon.spy(subject, 'returnCredit');
+        action();
+        expect(spy.called).to.equal(false);
+      });
+
+      it('does not reset accumulated credits', function(){
+        subject.credits = .25;
+        action();
+        expect(subject.credits).to.equal(.25);
+      });
     });
 
     context('when selected button is \'refund\'', function(){
-      it('clears button selection');
-      it('clears pending items');
-      it('returns credits');
-      it('resets accumulated credits');
+      var action = function(){ subject.selectButton('refund') };
+
+      it('clears button selection', function(){
+        subject.selectButton('f');
+        expect(subject.buttonQueue).to.equal('f');
+        action();
+        expect(subject.buttonQueue).to.equal('');
+      });
+
+      it('clears pending items', function(){
+        subject.pendingPurchase = samplePendingPurchase;
+        action();
+        expect(subject.pendingPurchase).to.equal(null);
+      });
+
+      it('resets accumulated credits', function(){
+        subject.credits = .25;
+        action();
+        expect(subject.credits).to.equal(0);
+      });
+
+      it('returns credits', function(){
+        var spy = sinon.spy(subject, 'returnCredit');
+        action();
+        expect(spy.called).to.equal(true);        
+      });
     });
 
     context('when selected button is a letter or number', function(){
