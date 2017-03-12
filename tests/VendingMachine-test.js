@@ -124,8 +124,8 @@ describe('VendingMachine', function(){
         expect(subject.buttonQueue).to.equal('A');
       });
 
-      it('triggers the item search only if two buttons have been pressed', function(){
-        var spy = sinon.spy(subject, 'itemSearch');
+      it('triggers the processSaleRequest only if two buttons have been pressed', function(){
+        var spy = sinon.spy(subject, 'processSaleRequest');
         subject.selectButton('a');
         expect(spy.called).to.equal(false);
         subject.selectButton('1');
@@ -145,41 +145,21 @@ describe('VendingMachine', function(){
     });
   });
 
-  describe('.itemSearch', function(){
-    context('when the item is not found', function(){
-      it('returns null', function(){
-        var result = subject.itemSearch('A2');
-        expect(result).to.equal(null);
-      });
-    });
-
-    context('when the item is found', function(){
-      beforeEach(function(){
-        subject.loadMachine(items);
-      });
-
-      it('returns the item information', function(){
-        subject.buttonQueue = 'a2';
-        var result = subject.itemSearch();
-        var expectedResult = {'a2': { item: 'banana', quantity: 8, cost: 1.25}};
-        expect(result).to.deep.equal(expectedResult);
-      });
-    });
-  });
-
   describe('.beginSaleProcess', function(){
+    var action = function(){return subject.beginSaleProcess()};
+
     context('when no pendingPurchase', function(){
       it('returns undefined', function(){
-        expect(subject.beginSaleProcess()).to.equal(undefined);
+        expect(action()).to.equal(undefined);
       });
     });
 
     context('when pendingPurchase', function(){
       beforeEach(function(){
-        var item = {item: 'Fig Newton', cost: 2};
+        var item = {item: 'Fig Newton', cost: 2, quantity: 2};
         subject.loadMachine(item);
         subject.pendingPurchase = { 'a1': item };
-      }); 
+      });
 
       context('if exact change', function(){
         beforeEach(function(){
@@ -188,14 +168,36 @@ describe('VendingMachine', function(){
 
         it('vends the item', function(){
           var spy = sinon.spy(subject, 'vendItem');
-          subject.beginSaleProcess();
+          action();
           expect(spy.called).to.equal(true);
         });
 
         it('clears the credits', function(){
           expect(subject.credits).to.equal(2);
-          subject.beginSaleProcess();
+          action();
           expect(subject.credits).to.equal(0);
+        });
+
+        it('adds the cost of the item to the bank', function(){
+          expect(subject.bank).to.equal(0);
+          action();
+          expect(subject.bank).to.equal(2);
+        });
+
+        it('decrements the item inventory', function(){
+          expect(subject.inventory['a1'].quantity).to.equal(2);
+          action();
+          expect(subject.inventory['a1'].quantity).to.equal(1);
+        });
+
+        it('clears the slot in the item inventory if item sold out', function(){
+          expect(subject.inventory['a1'].quantity).to.equal(2);
+          action();
+          expect(subject.inventory['a1'].quantity).to.equal(1);
+          subject.credits = 2;
+          subject.pendingPurchase = { 'a1': subject.inventory['a1'] };
+          action();
+          expect(subject.inventory['a1']).to.equal(undefined);
         });
 
         it('clears the item queue', function(){
@@ -211,18 +213,30 @@ describe('VendingMachine', function(){
 
         it('does not vend the item', function(){
           var spy = sinon.spy(subject, 'vendItem');
-          subject.beginSaleProcess();
+          action();
           expect(spy.called).to.equal(false);
         });
 
         it('does not clear the credits', function(){
           expect(subject.credits).to.equal(1.25);
-          subject.beginSaleProcess();
+          action();
           expect(subject.credits).to.equal(1.25);
         });
 
-        xit('clears the item queue after 3 seconds', function(){
-          subject.beginSaleProcess();
+        it('does not add the cost of the item to the bank', function(){
+          expect(subject.bank).to.equal(0);
+          action();
+          expect(subject.bank).to.equal(0);
+        });
+
+        it('does not decrement the item inventory', function(){
+          expect(subject.inventory['a1'].quantity).to.equal(2);
+          action();
+          expect(subject.inventory['a1'].quantity).to.equal(2);
+        });
+
+        it('clears the item queue after 3 seconds', function(){
+          action();
           expect(subject.pendingPurchase).to.equal(null);
         });
       });
@@ -234,28 +248,39 @@ describe('VendingMachine', function(){
 
         it('vends the item', function(){
           var spy = sinon.spy(subject, 'vendItem');
-          subject.beginSaleProcess();
+          action();
           expect(spy.called).to.equal(true);
+        });
+
+        it('adds the cost of the item to the bank', function(){
+          expect(subject.bank).to.equal(0);
+          action();
+          expect(subject.bank).to.equal(2);
+        });
+
+        it('decrements the item inventory', function(){
+          expect(subject.inventory['a1'].quantity).to.equal(2);
+          action();
+          expect(subject.inventory['a1'].quantity).to.equal(1);
         });
 
         it('clears the credits', function(){
           expect(subject.credits).to.equal(2.25);
-          subject.beginSaleProcess();
+          action();
           expect(subject.credits).to.equal(0);
         });
 
         it('clears the item queue', function(){
-          subject.beginSaleProcess();
+          action();
           expect(subject.pendingPurchase).to.equal(null);
         });
 
         it('returns the remaining credits', function(){
           var spy = sinon.spy(subject, 'returnCredit');
 
-          subject.beginSaleProcess();
+          action();
           
           expect(spy.called).to.equal(true);
-          expect(spy.args[0][0]).to.equal(.25);
         });
       });
     });
