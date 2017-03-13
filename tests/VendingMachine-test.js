@@ -23,7 +23,7 @@ describe('VendingMachine', function(){
               { item: 'guava', cost: 2},
               { item: 'mango', cost: 2},
               { item: 'lichee', cost: 2}
-            ];
+    ];
   });
 
   describe('.loadMachine', function(){
@@ -47,7 +47,7 @@ describe('VendingMachine', function(){
       it('populates all items to the default width', function(){
         subject.loadMachine(items);
         var preBreak = 'a' + defaultWidth; // 'a6'
-        var preBreakOutput = items[defaultWidth - 1]
+        var preBreakOutput = items[defaultWidth - 1];
         preBreakOutput.quantity = defaultDepth;
         var postBreakOutput = items[defaultWidth];
         postBreakOutput.quantity = defaultDepth;
@@ -60,7 +60,7 @@ describe('VendingMachine', function(){
 
   describe('.selectButton', function(){
     context('when selected button is \'clear\'', function(){
-      var action = function(){ subject.selectButton('clear') };
+      var action = function(){ subject.selectButton('clear'); };
 
       it('clears button selection', function(){
         subject.selectButton('f');
@@ -89,7 +89,7 @@ describe('VendingMachine', function(){
     });
 
     context('when selected button is \'refund\'', function(){
-      var action = function(){ subject.selectButton('refund') };
+      var action = function(){ subject.selectButton('refund'); };
 
       it('clears button selection', function(){
         subject.selectButton('f');
@@ -153,7 +153,7 @@ describe('VendingMachine', function(){
   });
 
   describe('.beginSaleProcess', function(){
-    var action = function(){return subject.beginSaleProcess()};
+    var action = function(){return subject.beginSaleProcess();};
 
     context('when no pendingPurchase', function(){
       it('returns undefined', function(){
@@ -304,7 +304,7 @@ describe('VendingMachine', function(){
         xit('calls beginSaleProcess after 2 seconds', function(){
           // var spy = sinon.spy(subject, 'beginSaleProcess');
         });    
-      })
+      });
     });
 
     context('when currency is not accepted', function(){
