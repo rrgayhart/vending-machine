@@ -141,7 +141,14 @@ describe('VendingMachine', function(){
         expect(spy.called).to.equal(true);
       });
 
-      it('clears button queue after item is purchased')
+      it('clears button queue after item is purchased', function(){
+        subject.loadMachine({item: 'Candy', cost: 1});
+        subject.credits = 1;
+        subject.selectButton('a');
+        expect(subject.buttonQueue).to.equal('a');
+        subject.selectButton('1');
+        expect(subject.buttonQueue).to.equal('');
+      });
     });
   });
 
@@ -206,7 +213,7 @@ describe('VendingMachine', function(){
         });
       });
 
-      context('not enough cash', function(){
+      context('when not enough credits', function(){
         beforeEach(function(){
           subject.credits = 1.25;
         });
@@ -233,11 +240,6 @@ describe('VendingMachine', function(){
           expect(subject.inventory['a1'].quantity).to.equal(2);
           action();
           expect(subject.inventory['a1'].quantity).to.equal(2);
-        });
-
-        it('clears the item queue after 3 seconds', function(){
-          action();
-          expect(subject.pendingPurchase).to.equal(null);
         });
       });
 
